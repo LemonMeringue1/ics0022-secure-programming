@@ -1,30 +1,39 @@
 import cryptography
-import argon2
+from argon2 import PasswordHasher
 import sys
+
 
 def init():
     ...
 
+
 def unlock():
     ...
+
 
 def add():
     ...
 
+
 def list_entries():
     ...
+
 
 def show():
     ...
 
+
 def edit():
     ...
+
 
 def delete():
     ...
 
+
 def lock():
     ...
+
 
 def main():
     command_list = ["init", "unlock", "add", "list", "show", "edit", "delete", "lock"]
@@ -41,6 +50,7 @@ def main():
               "delete   - Delete an entry\n"
               "lock     - Lock the vault\n")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
