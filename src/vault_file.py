@@ -60,6 +60,8 @@ def save_vault(path: str, data: dict, *, must_not_exist: bool = False) -> None:
 
 
 def _fsync_dir(directory: str) -> None:
+    if not hasattr(os, "O_DIRECTORY"):          # not available on windows
+        return
     dfd = os.open(directory, os.O_RDONLY | os.O_DIRECTORY)
     try:
         os.fsync(dfd)
@@ -80,7 +82,7 @@ def _validate(data: object) -> None:
     try:
         t, m, p = kdf["time_cost"], kdf["memory_cost"], kdf["parallelism"]
         salt = base64.b64decode(kdf["salt"], validate=True)
-        nonce = base64.b64decode(kdf["nonce"], validate=True)
+        nonce = base64.b64decode(data["nonce"], validate=True)
         base64.b64decode(data["ct"], validate=True)
     except (KeyError, TypeError, ValueError):
         raise VaultFormatError("invalid vault file")

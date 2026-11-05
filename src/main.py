@@ -1,55 +1,20 @@
-import cryptography
-from argon2 import PasswordHasher
+# src/main.py
+import argparse
+import os
 import sys
 
+from shell import run_shell
 
-def init():
-    ...
-
-
-def unlock():
-    ...
+DEFAULT_VAULT = os.path.join(os.path.expanduser("~"), ".pwmanager", "vault.json")
 
 
-def add():
-    ...
+def main() -> None:
+    ap = argparse.ArgumentParser(description="Local password manager")
+    ap.add_argument("--vault", default=DEFAULT_VAULT, help="path to the vault file")
+    args = ap.parse_args()
 
-
-def list_entries():
-    ...
-
-
-def show():
-    ...
-
-
-def edit():
-    ...
-
-
-def delete():
-    ...
-
-
-def lock():
-    ...
-
-
-def main():
-    command_list = ["init", "unlock", "add", "list", "show", "edit", "delete", "lock"]
-    if len(sys.argv) < 2 or sys.argv[1] not in command_list:
-        print("Usage: python main.py [command]\n"
-              "\n"
-              "commands:\n"
-              "init     - Create a new vault\n"
-              "unlock   - Unlock the vault\n"
-              "add      - Add an entry\n"
-              "list     - List all entries\n"
-              "show     - Show all entries\n"
-              "edit     - Edit an entry\n"
-              "delete   - Delete an entry\n"
-              "lock     - Lock the vault\n")
-        sys.exit(1)
+    os.makedirs(os.path.dirname(os.path.abspath(args.vault)), mode=0o700, exist_ok=True)
+    sys.exit(run_shell(args.vault))
 
 
 if __name__ == "__main__":
