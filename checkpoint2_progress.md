@@ -41,12 +41,12 @@
 * Implemented (vault.py)
 * Vault format is .json
 * Vault handled as class with methods:
-* `create()`
-* `open()`
-* `lock()`
-* `list_name()`
-* `get()`
-* `add()`
-* `edit()`
-* `delete()`
+  * `create()`
+  * `open()`
+  * `lock()`
+  * `list_name()`
+  * `get()`
+  * `add()`
+  * `edit()`
+  * `delete()`
 * Create new vault instance on each create and open
