@@ -1,6 +1,6 @@
 # Password Manager
 
-Current progress: Checkpoint 1
+Current progress: Checkpoint 2
 
 A local, offline password manager.
 
@@ -55,6 +55,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # run
+cd src
 python main.py --help
 ```
 
@@ -67,9 +68,11 @@ python main.py --help
 ├── README.md
 ├── requirements.txt
 └── src/
+    ├── cipher.py
+    ├── kdf.py
     ├── main.py
-    ├── auth/           # user management module
-    ├── crypto/         # encryption module
-    └── storage/        # storage layer
+    ├── shell.py
+    ├── vault.py
+    └── vault_file.py
 ```
 

@@ -27,4 +27,4 @@ def decrypt(key: bytearray, nonce: bytes, ct: bytes, aad: bytes) -> bytes:
     try:
         return AESGCM(bytes(key)).decrypt(nonce, ct, aad)
     except InvalidTag:
-        raise DecryptionError("wrong password or corrupted/tampered vault")
+        raise DecryptionError("wrong password or corrupted/tampered vault") from None

@@ -96,7 +96,7 @@ class Vault:
                 raise DecryptionError("wrong password or corrupted/tampered vault")
         except (DecryptionError, ValueError):
             _wipe(key)
-            raise DecryptionError("wrong password or corrupted/tampered vault")
+            raise DecryptionError("wrong password or corrupted/tampered vault") from None
         return cls(path, header, key, entries)
 
     def lock(self):
@@ -118,7 +118,7 @@ class Vault:
         try:
             return dict(self._entries[name])
         except KeyError:
-            raise EntryError("no such entry")
+            raise EntryError("no such entry") from None
 
     def add(self, name: str, username: str, password: str, notes: str = "") -> None:
         self._require_unlocked()

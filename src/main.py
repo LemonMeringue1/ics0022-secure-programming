@@ -1,4 +1,3 @@
-# src/main.py
 import argparse
 import os
 import sys

@@ -26,7 +26,7 @@ def load_vault(path: str) -> dict:
     try:
         data = json.loads(raw)
     except (ValueError, UnicodeDecodeError):
-        raise VaultFormatError("invalid vault file")
+        raise VaultFormatError("invalid vault file") from None
 
     _validate(data)
     return data
@@ -49,7 +49,10 @@ def save_vault(path: str, data: dict, *, must_not_exist: bool = False) -> None:
         if must_not_exist:
             os.link(tmp, real)
             os.unlink(tmp)
+        else:
+            os.replace(tmp, real)
         _fsync_dir(directory)
+
 
     except BaseException:
         try:
@@ -85,7 +88,7 @@ def _validate(data: object) -> None:
         nonce = base64.b64decode(data["nonce"], validate=True)
         base64.b64decode(data["ct"], validate=True)
     except (KeyError, TypeError, ValueError):
-        raise VaultFormatError("invalid vault file")
+        raise VaultFormatError("invalid vault file") from None
 
     if not all(isinstance(x, int) and not isinstance(x, bool) for x in (t, m, p)):
         raise VaultFormatError("invalid vault file")

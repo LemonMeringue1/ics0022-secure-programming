@@ -1,7 +1,6 @@
 import getpass
 import os
 import shlex
-import traceback
 
 from cipher import DecryptionError
 from vault_file import VaultFormatError
@@ -10,7 +9,7 @@ from vault import Vault, EntryError, VaultLockedError
 MAX_ATTEMPTS = 3
 PROMPT = "pm> "
 HELP = """Commands:
-    add <name>      add an entry; will initialize a vault if one doesn't exist yet
+    add <name>      add an entry
     list            list all entries
     show            show an entry
     lock            lock the vault
@@ -39,9 +38,9 @@ def _unlock(path: str) -> Vault | None:
         try:
             return Vault.open(path, pw)
         except DecryptionError:
-            raise DecryptionError("Wrong password or corrupted vault.")
+            raise DecryptionError("Wrong password or corrupted/tampered vault.")
         except VaultFormatError:
-            raise VaultFormatError("Vault file is invalid.")
+            raise VaultFormatError("invalid vault file")
             return None
     return None
 
