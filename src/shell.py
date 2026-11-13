@@ -1,20 +1,25 @@
 import getpass
 import os
 import shlex
+import threading
+import time
 
 from cipher import DecryptionError
 from vault_file import VaultFormatError
 from vault import Vault, EntryError, VaultLockedError
+import pyperclip
 
 MAX_ATTEMPTS = 3
 PROMPT = "pm> "
 HELP = """Commands:
     add <name>      add an entry
+    delete <name>   delete an entry
+    copy <name>     copy password of entry to clipboard for 15 seconds
     list            list all entries
     show            show an entry
     lock            lock the vault
     help            show this help output
-    quit            lock and quit"""
+    quit | exit     lock and quit"""
 
 
 def _create(path: str) -> Vault | None:
@@ -34,15 +39,35 @@ def _create(path: str) -> Vault | None:
 
 def _unlock(path: str) -> Vault | None:
     for _ in range(MAX_ATTEMPTS):
-        pw = getpass.getpass("Master password: ")
+        try:
+            pw = getpass.getpass("Master password: ")
+        except KeyboardInterrupt:
+            break
         try:
             return Vault.open(path, pw)
         except DecryptionError:
             raise DecryptionError("Wrong password or corrupted/tampered vault.")
         except VaultFormatError:
-            raise VaultFormatError("invalid vault file")
+            raise VaultFormatError("invalid vault file") from None
             return None
     return None
+
+
+def _copy_with_timeout(text: str, timeout: int) -> None:
+    pyperclip.copy(text)
+
+    def clear_clipboard():
+        time.sleep(15)
+        pyperclip.copy("")
+
+    thread = threading.Thread(target=clear_clipboard, daemon=True)
+    thread.start()
+
+
+def _validate_input(text_input: str) -> None:
+    if len(text_input) > 256:
+        raise ValueError("input too long")
+
 
 
 def cmd_add(vault: Vault, args: list[str]) -> str:
@@ -68,7 +93,23 @@ def cmd_show(vault: Vault, args: list[str]) -> str:
     return f"Username: {e['username']}\nPassword: ********\nNotes:    {e['notes']}"
 
 
-COMMANDS = {"add": cmd_add, "list": cmd_list, "show": cmd_show}
+def cmd_delete(vault: Vault, args: list[str]) -> str:
+    if len(args) != 1:
+        return "usage: delete <name>"
+    name = args[0]
+    vault.delete(name)
+    return f"Deleted '{name}'."
+
+
+def cmd_copy(vault: Vault, args: list[str]) -> str:
+    if len(args) != 1:
+        return "usage: copy <name>"
+    e = vault.get(args[0])
+    _copy_with_timeout(e["password"], 15)
+    return "Password copied to clipboard (for 15 seconds)."
+
+
+COMMANDS = {"add": cmd_add, "list": cmd_list, "show": cmd_show, "delete": cmd_delete, "copy": cmd_copy}
 
 
 def run_shell(path: str) -> int:
