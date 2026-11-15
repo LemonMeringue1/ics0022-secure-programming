@@ -71,7 +71,7 @@ def _validate_input(text_input: str) -> None:
 
 
 class Timeout:
-    def __init__(self, timeout=3):
+    def __init__(self, timeout=180):
         self.timeout = timeout
         self._t = None
 
