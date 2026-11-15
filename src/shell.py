@@ -16,6 +16,7 @@ HELP = """Commands:
     add <name>      add an entry
     delete <name>   delete an entry
     copy <name>     copy password of entry to clipboard for 15 seconds
+    edit <name>     edit entry fields
     list            list all entries
     show            show an entry
     lock            lock the vault
@@ -47,7 +48,7 @@ def _unlock(path: str) -> Vault | None:
         try:
             return Vault.open(path, pw)
         except DecryptionError:
-            raise DecryptionError("Wrong password or corrupted/tampered vault.")
+            raise DecryptionError("Wrong password or corrupted/tampered vault.") from None
         except VaultFormatError:
             raise VaultFormatError("invalid vault file") from None
             return None
@@ -109,6 +110,31 @@ def cmd_add(vault: Vault, args: list[str]) -> str:
     return f"Added '{name}'."
 
 
+def cmd_edit(vault: Vault, args: list[str]) -> str:
+    if len(args) != 1:
+        return "usage: edit <name>"
+    name = args[0]
+
+    print("Leave a field empty to keep its current value.")
+    username = input("Username: ")
+    password = getpass.getpass("Password: ")
+    notes = input("Notes: ")
+
+    fields = {}
+    if username:
+        fields["username"] = username
+    if password:
+        fields["password"] = password
+    if notes:
+        fields["notes"] = notes
+
+    if not fields:
+        return "No changes."
+
+    vault.edit(name, **fields)
+    return f"Updated '{name}'."
+
+
 def cmd_list(vault: Vault, args: list[str]) -> str:
     names = vault.list_name()
     return "\n".join(names) if names else "(no entries)"
@@ -137,7 +163,7 @@ def cmd_copy(vault: Vault, args: list[str]) -> str:
     return "Password copied to clipboard (for 15 seconds)."
 
 
-COMMANDS = {"add": cmd_add, "list": cmd_list, "show": cmd_show, "delete": cmd_delete, "copy": cmd_copy}
+COMMANDS = {"add": cmd_add, "edit": cmd_edit, "list": cmd_list, "show": cmd_show, "delete": cmd_delete, "copy": cmd_copy}
 
 
 def run_shell(path: str) -> int:
