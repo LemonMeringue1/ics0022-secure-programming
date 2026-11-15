@@ -1,6 +1,7 @@
 import getpass
 import os
 import shlex
+import signal
 import threading
 import time
 
@@ -69,6 +70,33 @@ def _validate_input(text_input: str) -> None:
         raise ValueError("input too long")
 
 
+class Timeout:
+    def __init__(self, timeout=3):
+        self.timeout = timeout
+        self._t = None
+
+    def do_expire(self):
+        os.kill(os.getpid(), signal.SIGTERM)
+
+    def _expire(self):
+        print("\nSession timed out due to inactivity")
+        self.do_expire()
+
+    def start(self):
+        if self._t is None:
+            self._t = threading.Timer(self.timeout, self._expire)
+            self._t.start()
+
+    def stop(self):
+        if self._t is not None:
+            self._t.cancel()
+            self._t = None
+
+    def refresh(self):
+        if self._t is not None:
+             self.stop()
+             self.start()
+
 
 def cmd_add(vault: Vault, args: list[str]) -> str:
     if len(args) != 1:
@@ -116,10 +144,13 @@ def run_shell(path: str) -> int:
     vault = _unlock(path) if os.path.exists(path) else _create(path)
     if vault is None:
         return 1
+    timeout = Timeout()
+    timeout.start()
 
     try:
         print(HELP)
         while True:
+            timeout.refresh()
             try:
                 line = input(PROMPT)
             except EOFError:               # Ctrl+D / Ctrl+Z
