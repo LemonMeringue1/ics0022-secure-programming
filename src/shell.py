@@ -4,11 +4,13 @@ import shlex
 import signal
 import threading
 import time
+import logging
 
 from cipher import DecryptionError
 from vault_file import VaultFormatError
 from vault import Vault, EntryError, VaultLockedError
 import pyperclip
+from timeout import Timeout
 
 MAX_ATTEMPTS = 3
 PROMPT = "pm> "
@@ -22,6 +24,7 @@ HELP = """Commands:
     lock            lock the vault
     help            show this help output
     quit | exit     lock and quit"""
+logger = logging.getLogger(__name__)
 
 
 def _create(path: str) -> Vault | None:
@@ -55,48 +58,9 @@ def _unlock(path: str) -> Vault | None:
     return None
 
 
-def _copy_with_timeout(text: str, timeout: int) -> None:
-    pyperclip.copy(text)
-
-    def clear_clipboard():
-        time.sleep(15)
-        pyperclip.copy("")
-
-    thread = threading.Thread(target=clear_clipboard, daemon=True)
-    thread.start()
-
-
 def _validate_input(text_input: str) -> None:
     if len(text_input) > 256:
         raise ValueError("input too long")
-
-
-class Timeout:
-    def __init__(self, timeout=180):
-        self.timeout = timeout
-        self._t = None
-
-    def do_expire(self):
-        os.kill(os.getpid(), signal.SIGTERM)
-
-    def _expire(self):
-        print("\nSession timed out due to inactivity")
-        self.do_expire()
-
-    def start(self):
-        if self._t is None:
-            self._t = threading.Timer(self.timeout, self._expire)
-            self._t.start()
-
-    def stop(self):
-        if self._t is not None:
-            self._t.cancel()
-            self._t = None
-
-    def refresh(self):
-        if self._t is not None:
-             self.stop()
-             self.start()
 
 
 def cmd_add(vault: Vault, args: list[str]) -> str:
@@ -153,6 +117,17 @@ def cmd_delete(vault: Vault, args: list[str]) -> str:
     name = args[0]
     vault.delete(name)
     return f"Deleted '{name}'."
+
+
+def _copy_with_timeout(text: str, timeout: int) -> None:
+    pyperclip.copy(text)
+
+    def clear_clipboard():
+        time.sleep(timeout)
+        pyperclip.copy("")
+
+    thread = threading.Thread(target=clear_clipboard, daemon=True)
+    thread.start()
 
 
 def cmd_copy(vault: Vault, args: list[str]) -> str:
@@ -221,4 +196,5 @@ def run_shell(path: str) -> int:
     finally:
         if vault is not None:
             vault.lock()
+        timeout.stop()
     return 0

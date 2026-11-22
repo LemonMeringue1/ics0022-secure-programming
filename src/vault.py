@@ -1,6 +1,7 @@
 import base64
 import json
 from typing import Dict
+import logging
 
 from cipher import DecryptionError, decrypt, encrypt
 from kdf import KdfParams, derive_key, new_salt
@@ -8,6 +9,7 @@ from vault_file import load_vault, save_vault
 
 VERSION = 1
 MIN_PASSWORD_LENGTH = 12
+logger = logging.getLogger(__name__)
 
 
 class VaultLockedError(Exception):
@@ -69,6 +71,7 @@ class Vault:
         except BaseException:
             _wipe(key)
             raise
+        logger.info("vault_created")
         return vault
 
     @classmethod
@@ -96,13 +99,16 @@ class Vault:
                 raise DecryptionError("wrong password or corrupted/tampered vault")
         except (DecryptionError, ValueError):
             _wipe(key)
+            logger.warning("unlock_fail")
             raise DecryptionError("wrong password or corrupted/tampered vault") from None
+        logger.info("unlock_success")
         return cls(path, header, key, entries)
 
     def lock(self):
         if self._key is not None:
             _wipe(self._key)
             self._key = None
+            logger.info("vault_locked")
         self._entries = {}
 
     @property
@@ -130,6 +136,7 @@ class Vault:
             {**self._entries,
              name: {"username": username, "password": password, "notes": notes}}
         )
+        logger.info("entry_added name=%s", name)
 
     def edit(self, name:str, **fields) -> None:
         self._require_unlocked()
@@ -139,15 +146,18 @@ class Vault:
         if not fields or not set(fields) <= allowed:
             raise EntryError("invalid fields")
         self._commit({**self._entries, name: {**self._entries[name], **fields}})
+        logger.info("entry_edited name=%s", name)
 
     def delete(self, name: str) -> None:
         self._require_unlocked()
         if name not in self._entries:
             raise EntryError("no such entry")
         self._commit({k: v for k, v in self._entries.items() if k != name})
+        logger.info("entry_deleted name=%s", name)
 
     def _require_unlocked(self) -> None:
         if self._key is None:
+            logger.warning("operation_denied reason=vault_locked")
             raise VaultLockedError("vault is locked")
 
     def _commit(self, new_entries: dict) -> None:
