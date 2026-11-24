@@ -99,9 +99,9 @@ class Vault:
                 raise DecryptionError("wrong password or corrupted/tampered vault")
         except (DecryptionError, ValueError):
             _wipe(key)
-            logger.warning("unlock_fail")
+            logger.warning("unlock_failed")
             raise DecryptionError("wrong password or corrupted/tampered vault") from None
-        logger.info("unlock_success")
+        logger.info("unlock_succeeded")
         return cls(path, header, key, entries)
 
     def lock(self):

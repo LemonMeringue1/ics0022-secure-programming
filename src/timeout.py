@@ -12,6 +12,7 @@ class Timeout:
         self._t = None
 
     def do_expire(self):
+        logger.info("session_timed_out")
         os.kill(os.getpid(), signal.SIGTERM)
 
     def _expire(self):
