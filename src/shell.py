@@ -8,9 +8,11 @@ import logging
 
 from cipher import DecryptionError
 from vault_file import VaultFormatError
-from vault import Vault, EntryError, VaultLockedError
-import pyperclip
+from vault import Vault
+from errors import EntryError, VaultLockedError
 from timeout import Timeout
+
+import pyperclip
 
 MAX_ATTEMPTS = 3
 PROMPT = "pm> "
