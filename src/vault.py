@@ -6,18 +6,12 @@ import logging
 from cipher import DecryptionError, decrypt, encrypt
 from kdf import KdfParams, derive_key, new_salt
 from vault_file import load_vault, save_vault
+from validation import validate_name, validate_field
+from errors import EntryError, VaultLockedError
 
 VERSION = 1
 MIN_PASSWORD_LENGTH = 12
 logger = logging.getLogger(__name__)
-
-
-class VaultLockedError(Exception):
-    """Vault is locked."""
-
-
-class EntryError(Exception):
-    """Entry already exists, doesn't exist or should be non-empty"""
 
 
 def _b64encode(b: bytes) -> str:
@@ -128,8 +122,10 @@ class Vault:
 
     def add(self, name: str, username: str, password: str, notes: str = "") -> None:
         self._require_unlocked()
-        if not name:
-            raise EntryError("entry name must be non-empty")
+        name = validate_name(name)
+        username = validate_field("username", username)
+        password = validate_field("password", password)
+        notes = validate_field("notes", notes)
         if name in self._entries:
             raise EntryError("entry already exists")
         self._commit(
