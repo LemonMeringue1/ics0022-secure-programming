@@ -58,6 +58,11 @@ def _unlock(path: str) -> Vault | None:
     return None
 
 
+def _validate_input(text_input: str) -> None:
+    if len(text_input) > 256:
+        raise ValueError("input too long")
+
+
 def cmd_add(vault: Vault, args: list[str]) -> str:
     if len(args) != 1:
         return "usage: add <name>"
