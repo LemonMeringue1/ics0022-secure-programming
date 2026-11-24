@@ -11,6 +11,7 @@ from errors import EntryError, VaultLockedError
 
 VERSION = 1
 MIN_PASSWORD_LENGTH = 12
+MAX_PASSWORD_LENGTH = 1024
 logger = logging.getLogger(__name__)
 
 
@@ -43,8 +44,8 @@ class Vault:
 
     @classmethod
     def create(cls, path: str, master_password: str, params: KdfParams = KdfParams()) -> "Vault":
-        if len(master_password) < MIN_PASSWORD_LENGTH:
-            raise ValueError(f"master password must be at least {MIN_PASSWORD_LENGTH} characters")
+        if len(master_password) < MIN_PASSWORD_LENGTH or len(master_password) > MAX_PASSWORD_LENGTH:
+            raise ValueError(f"master password must be between {MIN_PASSWORD_LENGTH} and {MAX_PASSWORD_LENGTH} characters long")
 
         salt = new_salt()
         header = {
@@ -115,6 +116,7 @@ class Vault:
 
     def get(self, name: str) -> dict:
         self._require_unlocked()
+        name = validate_name(name)
         try:
             return dict(self._entries[name])
         except KeyError:
@@ -136,16 +138,18 @@ class Vault:
 
     def edit(self, name:str, **fields) -> None:
         self._require_unlocked()
+        name = validate_name(name)
         if name not in self._entries:
             raise EntryError("no such entry")
-        allowed = {"username", "password", "notes"}
-        if not fields or not set(fields) <= allowed:
+        if not fields:
             raise EntryError("invalid fields")
-        self._commit({**self._entries, name: {**self._entries[name], **fields}})
+        cleaned = {k: validate_field(k, v) for k, v in fields.items()}
+        self._commit({**self._entries, name: {**self._entries[name], **cleaned}})
         logger.info("entry_edited name=%s", name)
 
     def delete(self, name: str) -> None:
         self._require_unlocked()
+        name = validate_name(name)
         if name not in self._entries:
             raise EntryError("no such entry")
         self._commit({k: v for k, v in self._entries.items() if k != name})
