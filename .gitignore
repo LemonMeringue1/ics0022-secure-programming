@@ -18,5 +18,3 @@ Thumbs.db
 
 *.vault
 .env
-tests/
-src/*test.py
