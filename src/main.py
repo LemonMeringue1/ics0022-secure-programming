@@ -5,8 +5,18 @@ import sys
 from shell import run_shell
 from setup_logging import setup_logging
 
-DEFAULT_VAULT = os.path.join(os.path.expanduser("~"), ".pwmanager", "vault.json")
-LOGGING_PATH = os.path.join(os.path.expanduser("~"), ".pwmanager", "log.log")
+BASE_DIR = os.path.realpath(os.path.join(os.path.expanduser("~"), ".pwmanager"))
+DEFAULT_VAULT = os.path.join(BASE_DIR, "vault.json")
+LOGGING_PATH = os.path.join(BASE_DIR, "log.log")
+
+
+def safe_path(path):
+    resolved = os.path.realpath(path)
+    if resolved != BASE_DIR and not resolved.startswith(BASE_DIR + os.sep):
+        raise ValueError(f"vault path is outside allowed directory") from None
+    if os.path.isdir(resolved):
+        raise ValueError(f"vault path must be a file, not directory") from None
+    return resolved
 
 
 def main() -> None:
@@ -14,8 +24,12 @@ def main() -> None:
     ap.add_argument("--vault", default=DEFAULT_VAULT, help="path to the vault file")
     args = ap.parse_args()
 
-    os.makedirs(os.path.dirname(os.path.abspath(args.vault)), mode=0o700, exist_ok=True)
-    os.makedirs(os.path.dirname(os.path.abspath(LOGGING_PATH)), exist_ok=True)
+    try:
+        vault_path = args.vault
+    except ValueError as e:
+        ap.error(str(e))
+
+    os.makedirs(BASE_DIR, mode=0o700, exist_ok=True)
     setup_logging(LOGGING_PATH)
     sys.exit(run_shell(args.vault))
 
