@@ -96,6 +96,9 @@ class Vault:
             _wipe(key)
             logger.warning("unlock_failed")
             raise DecryptionError("wrong password or corrupted/tampered vault") from None
+        except BaseException:
+            _wipe(key)
+            raise
         logger.info("unlock_succeeded")
         return cls(path, header, key, entries)
 
