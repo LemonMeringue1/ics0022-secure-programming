@@ -53,10 +53,12 @@ def _unlock(path: str) -> Vault | None:
         try:
             return Vault.open(path, pw)
         except DecryptionError:
-            raise DecryptionError("Wrong password or corrupted/tampered vault.") from None
+            print("Wrong password or corrupted/tampered vault.")
+            continue
         except VaultFormatError:
             raise VaultFormatError("invalid vault file") from None
             return None
+    print("Too many failed attempts.")
     return None
 
 
@@ -139,7 +141,12 @@ COMMANDS = {"add": cmd_add, "edit": cmd_edit, "list": cmd_list, "show": cmd_show
 
 
 def run_shell(path: str) -> int:
-    vault = _unlock(path) if os.path.exists(path) else _create(path)
+    vault = None
+    try:
+        vault = _unlock(path) if os.path.exists(path) else _create(path)
+    except (DecryptionError, VaultFormatError) as e:
+        print(e)
+
     if vault is None:
         return 1
     timeout = Timeout()
@@ -170,7 +177,11 @@ def run_shell(path: str) -> int:
                 continue
             if cmd == "lock":
                 vault.lock()
-                vault = _unlock(path)
+                vault = None
+                try:
+                    vault = _unlock(path) if os.path.exists(path) else _create(path)
+                except (DecryptionError, VaultFormatError) as e:
+                    print(e)
                 if vault is None:
                     return 1
                 continue
