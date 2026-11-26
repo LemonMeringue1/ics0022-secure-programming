@@ -10,7 +10,7 @@ dependencies = ["argon2-cffi", "cryptography", "pytest"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-py-modules = ["main", "vault", "shell", "errors", "validation", "setup_logging", "cipher", "kdf", ]
+py-modules = ["main", "vault", "shell", "errors", "validation", "setup_logging", "cipher", "kdf", "vault_file"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
