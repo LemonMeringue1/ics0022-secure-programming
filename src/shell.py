@@ -179,7 +179,7 @@ def run_shell(path: str) -> int:
                 timeout.stop()
                 vault = None
                 try:
-                    vault = _unlock(path) if os.path.exists(path) else _create(path)
+                    vault = _unlock(path)
                 except (DecryptionError, VaultFormatError) as e:
                     print(e)
                 if vault is None:
