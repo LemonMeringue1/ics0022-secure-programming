@@ -1,4 +1,3 @@
-# tests/test_shell.py
 import builtins
 import logging
 from types import SimpleNamespace
