@@ -177,6 +177,7 @@ def run_shell(path: str) -> int:
                 continue
             if cmd == "lock":
                 vault.lock()
+                timeout.stop()
                 vault = None
                 try:
                     vault = _unlock(path) if os.path.exists(path) else _create(path)
@@ -184,6 +185,7 @@ def run_shell(path: str) -> int:
                     print(e)
                 if vault is None:
                     return 1
+                timeout.start()
                 continue
 
             handler = COMMANDS.get(cmd)
