@@ -148,7 +148,13 @@ def run_shell(path: str) -> int:
 
     if vault is None:
         return 1
-    timeout = Timeout()
+
+    def _lock_current_vault() -> None:
+        if vault is not None:
+            vault.lock()
+        pyperclip.copy("")
+
+    timeout = Timeout(on_expire=_lock_current_vault)
     timeout.start()
 
     try:
