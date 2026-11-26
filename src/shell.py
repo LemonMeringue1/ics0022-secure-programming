@@ -1,7 +1,6 @@
 import getpass
 import os
 import shlex
-import signal
 import threading
 import time
 import logging
@@ -199,8 +198,9 @@ def run_shell(path: str) -> int:
                 print(e)
             except (DecryptionError, VaultFormatError):
                 print("Vault error.")
-            except Exception:
+            except Exception as e:
                 print("Unexpected error.")
+                logger.error("unexpected_error type=%s", type(e).__name__)
     except KeyboardInterrupt:              # Ctrl+C
         print()
     finally:
