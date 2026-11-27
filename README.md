@@ -54,6 +54,7 @@ source .venv/bin/activate
 
 # install dependencies
 pip install -r requirements.txt
+pip install -e .
 
 # optionally, run tests
 python -m pytest tests/ -v
