@@ -1,6 +1,6 @@
 # Password Manager
 
-Current progress: Checkpoint 2
+Current progress: Checkpoint 3
 
 A local, offline password manager.
 
@@ -24,23 +24,24 @@ file, protected by a master password.
 * Browser integration / autofill
 * Recovery of a forgotten master password
 
-## Planned commands
+## Commands
 
-|Command|Description|
-|-|-|
-|python main.py init|Create a new vault, prompting for a master password|
-|python main.py unlock|Unlock the vault for the current session|
-|python main.py add|Add a new entry (site, username, password, notes)|
-|python main.py list|List entry names (no secrets shown) in the unlocked vault|
-|python main.py show <name>|Display a specific entry's details|
-|python main.py edit <name>|Edit an existing entry|
-|python main.py delete <name>|Delete an entry|
-|python main.py lock|Manually lock the vault and clear the key from memory|
+| Command        | Description                                           |
+|----------------|-------------------------------------------------------|
+| python main.py | Create vault if doesn't exist, otherwise unlock       |
+| add \<name>    | Add a new entry (name, username, password, notes)     |
+| delete \<name> | Delete an entry                                       |
+| copy \<name>   | Copy password of entry                                |
+| edit \<name>   | Edit an existing entry                                |
+| list           | List entry names                                      |
+| show \<name>   | Display an entry's details (no password in plaintext) |
+| lock           | Manually lock the vault and clear the key from memory |
+| help           | Show help output                                      |
+| quit \| exit   | Lock and quit                                         |
 
 ## Build and run
 
-**Requirements:** Python 3.11+, and a virtual
-environment.
+**Requirements:** Python 3.11+, and a virtual environment.
 
 ```bash
 # clone and enter the repo
@@ -54,25 +55,25 @@ source .venv/bin/activate
 # install dependencies
 pip install -r requirements.txt
 
-# run
+# optionally, run tests
+python -m pytest tests/ -v
+
+# run program
 cd src
-python main.py --help
+python main.py
 ```
 
 ## Repository structure
 
-
-
-```
-.
-├── README.md
-├── requirements.txt
-└── src/
-    ├── cipher.py
-    ├── kdf.py
-    ├── main.py
-    ├── shell.py
-    ├── vault.py
-    └── vault_file.py
-```
-
+| Path                 | Description                          |
+|----------------------|--------------------------------------|
+| src/cipher.py        | Encryption and decryption module     |
+| src/kdf.py           | Key derivation module                |
+| src/main.py          | Main module                          |
+| src/setup_logging.py | Logging module                       |
+| src/shell.py         | Interactive shell module             |
+| src/timeout.py       | User inactivity timeout module       |
+| src/validation.py    | Input validation module              |
+| src/vault.py         | Vault module, containing Vault class |
+| src/vault_file.py    | Vault saving and loading module      |
+| /tests/              | Tests module                         |
