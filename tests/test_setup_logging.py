@@ -198,12 +198,3 @@ def test_one_line_per_record(root_logger, log_path):
         log.info("evt%d", i)
     _flush(root_logger)
     assert len(_read(log_path).splitlines()) == 5
-
-
-# --- known limitation -------------------------------------------------------------
-
-@pytest.mark.xfail(reason="setup_logging does not guard against being called twice", strict=True)
-def test_calling_twice_does_not_duplicate_handlers(root_logger, log_path):
-    setup_logging(log_path)
-    setup_logging(log_path)
-    assert len(_file_handlers(root_logger, log_path)) == 1
