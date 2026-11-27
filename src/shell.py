@@ -4,6 +4,11 @@ import shlex
 import threading
 import time
 import logging
+try:
+    import readline
+    readline.set_auto_history(False)    # don't record lines typed at input()
+except (ImportError, AttributeError):
+    pass
 
 from cipher import DecryptionError
 from vault_file import VaultFormatError
